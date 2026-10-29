@@ -361,16 +361,17 @@ public class ResponseStream<T extends JsonSerializable> implements Iterable<T>, 
 
   private void closeOwnResponse() {
     try {
+      // Close the response first to unblock reads that hold the reader's lock.
+      if (response != null) {
+        response.close();
+      }
+    } finally {
       if (reader != null) {
         try {
           reader.close();
         } catch (IOException e) {
           throw new GenAiIOException("Failed to close the response stream.", e);
         }
-      }
-    } finally {
-      if (response != null) {
-        response.close();
       }
     }
   }
